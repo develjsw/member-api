@@ -1,21 +1,26 @@
-import { ConnectionOptions } from 'typeorm';
+import { registerAs } from '@nestjs/config';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const mysqlDataBase: ConnectionOptions = {
-    type: 'mysql',
-    host: process.env.DATABASE_HOST,
-    port: parseInt(process.env.DATABASE_PORT, 10) || 3306,
-    username: process.env.DATABASE_USERNAME,
-    password: process.env.DATABASE_PASSWORD,
-    database: process.env.DATABASE_SCHEMA,
-    entities: ['dist/**/entities/*.entity{.ts,.js}'],
-    synchronize: false,
-    logging: 'all'
-};
+// TODO : secret 위치 변경 필요
+const MYSQL_HOST = path.resolve('./secret/development/mysql-host');
+const MYSQL_USER_NAME = path.resolve('./secret/development/mysql-username');
+const MYSQL_PASSWORD = path.resolve('./secret/development/mysql-password');
 
-export default () => ({
+export default registerAs('config-info', () => ({
     port: parseInt(process.env.PORT, 10) || 8001,
 
     database: {
-        mysql: mysqlDataBase
+        mysql: {
+            type: 'mysql',
+            host: fs.readFileSync(MYSQL_HOST).toString(),
+            port: 3306,
+            username: fs.readFileSync(MYSQL_USER_NAME).toString(),
+            password: fs.readFileSync(MYSQL_PASSWORD).toString(),
+            database: 'test',
+            entities: ['dist/!**!/entities/!*.entity{.ts,.js}'],
+            synchronize: false,
+            logging: 'all'
+        }
     }
-});
+}));

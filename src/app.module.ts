@@ -6,9 +6,11 @@ import configDevelopment from './config/config.development';
 import configProduction from './config/config.production';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-let config = configDevelopment;
+let config;
 if (process.env.NODE_ENV === 'production') {
     config = configProduction;
+} else {
+    config = configDevelopment;
 }
 
 @Module({
@@ -21,7 +23,8 @@ if (process.env.NODE_ENV === 'production') {
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) =>
-                configService.get('database.mysql'),
+                // TODO : config/config.development.ts 파일에 type 생성 후, object 타입 변경 예정
+                configService.get<object>('config-info.database.mysql'),
             inject: [ConfigService]
         })
     ],
