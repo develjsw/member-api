@@ -7,7 +7,6 @@ export class MemberAuthRepository {
     private memberAuthRepository: Repository<MemberAuthEntity>;
 
     constructor(protected readonly dataSource: DataSource) {
-        this.memberAuthRepository =
-            this.dataSource.getRepository(MemberAuthEntity);
+        this.memberAuthRepository = this.dataSource.getRepository(MemberAuthEntity);
     }
 }
