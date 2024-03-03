@@ -1,8 +1,8 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('tb_member')
 export class MemberEntity {
-    @PrimaryColumn('number', {
+    @PrimaryGeneratedColumn({
         name: 'member_id'
     })
     memberId: number;

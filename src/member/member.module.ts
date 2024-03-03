@@ -8,12 +8,7 @@ import { MemberAuthRepository } from './repositories/member-auth.repository';
 @Module({
     imports: [],
     controllers: [MemberController],
-    providers: [
-        MemberService,
-        MemberRepository,
-        MemberAuthService,
-        MemberAuthRepository
-    ],
+    providers: [MemberService, MemberRepository, MemberAuthService, MemberAuthRepository],
     exports: []
 })
 export class MemberModule {}

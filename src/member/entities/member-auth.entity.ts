@@ -1,13 +1,13 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('tb_member_auth')
 export class MemberAuthEntity {
-    @PrimaryColumn('number', {
+    @PrimaryGeneratedColumn({
         name: 'member_auth_id'
     })
     memberAuthId: number;
 
-    @PrimaryColumn('number', {
+    @PrimaryColumn('int', {
         name: 'member_id'
     })
     memberId: number;

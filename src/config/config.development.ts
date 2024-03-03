@@ -17,7 +17,7 @@ export default () => ({
             username: fs.readFileSync(MYSQL_USER_NAME).toString(),
             password: fs.readFileSync(MYSQL_PASSWORD).toString(),
             database: 'msa',
-            entities: ['dist/!**!/entities/!*.entity{.ts,.js}'],
+            entities: ['dist/**/entities/*.entity{.ts,.js}'],
             synchronize: false,
             logging: 'all'
         }
