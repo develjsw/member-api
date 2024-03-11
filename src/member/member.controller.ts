@@ -3,6 +3,7 @@ import { MemberService } from './servicies/member.service';
 import { MemberAuthService } from './servicies/member-auth.service';
 import { MemberSignupDto } from './dto/member-signup.dto';
 import { MemberEntity } from './entities/member.entity';
+import { MemberLoginDto } from './dto/member-login.dto';
 
 @Controller('api/v1/members')
 export class MemberController {
@@ -17,15 +18,25 @@ export class MemberController {
     // TODO : 회원 정보 수정 (only DB? Redis+DB?)
     // TODO : 회원 탈퇴 (only DB? Redis+DB?)
 
-    // 회원가입
+    /**
+     * 회원 가입
+     * @param memberSignupDto
+     */
     @Post('signup')
     @UsePipes(ValidationPipe)
     async signup(@Body() memberSignupDto: MemberSignupDto): Promise<MemberEntity> {
         return await this.memberService.memberSignup(memberSignupDto);
     }
 
+    /**
+     * 로그인
+     * @param memberLoginDto
+     */
     @Post('login')
-    async login() {}
+    @UsePipes(ValidationPipe)
+    async login(@Body() memberLoginDto: MemberLoginDto) {
+        await this.memberService.memberLogin(memberLoginDto);
+    }
 
     @Post('logout')
     async logout() {}
