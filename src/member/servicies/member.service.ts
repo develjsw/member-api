@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { MemberRepository } from '../repositories/member.repository';
 import { MemberSignupDto } from '../dto/member-signup.dto';
 import { MemberEntity } from '../entities/member.entity';
-import { hashBcrypt } from '../../util';
+import { hashBcrypt, compareHashBcrypt } from '../../util';
 import { MemberLoginDto } from '../dto/member-login.dto';
 
 @Injectable()
@@ -26,7 +26,7 @@ export class MemberService {
         }
     }
 
-    async memberLogin(memberLoginDto: MemberLoginDto): Promise<any> {
+    async memberLogin(memberLoginDto: MemberLoginDto): Promise<MemberLoginDto> {
         const memberInfo = await this.memberRepository.memberLogin(memberLoginDto);
 
         if (!memberInfo) {
@@ -34,10 +34,13 @@ export class MemberService {
         }
 
         // 비밀번호 검증
-        if (memberInfo.password !== (await hashBcrypt(memberLoginDto.password, this.saltOrRounds))) {
+        if (!(await compareHashBcrypt(memberLoginDto.password, memberInfo.password))) {
             throw new BadRequestException('invalid password');
         }
 
-        // TODO : Redis에 로그인 성공한 회원정보 저장 (password는 delete로 제거)
+        // TODO : 회원 정보 Redis 저장
+
+        delete memberInfo.password;
+        return memberInfo;
     }
 }
