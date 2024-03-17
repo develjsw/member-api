@@ -12,7 +12,6 @@ export class MemberController {
         private readonly memberAuthService: MemberAuthService
     ) {}
 
-    // TODO : 로그인 (Redis 활용 - 어디까지 활용할 것인가?)
     // TODO : 로그아웃 (Redis 활용)
     // TODO : 회원 상세 정보 조회 (only DB? Redis+DB?)
     // TODO : 회원 정보 수정 (only DB? Redis+DB?)
@@ -35,7 +34,7 @@ export class MemberController {
     @Post('login')
     @UsePipes(ValidationPipe)
     async login(@Body() memberLoginDto: MemberLoginDto) {
-        await this.memberService.memberLogin(memberLoginDto);
+        return await this.memberService.memberLogin(memberLoginDto);
     }
 
     @Post('logout')
