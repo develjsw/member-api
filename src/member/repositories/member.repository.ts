@@ -3,7 +3,6 @@ import { DataSource, Repository } from 'typeorm';
 import { MemberEntity } from '../entities/member.entity';
 import { MemberSignupDto } from '../dto/member-signup.dto';
 import { plainToClass } from 'class-transformer';
-import { MemberLoginDto } from '../dto/member-login.dto';
 
 @Injectable()
 export class MemberRepository {
@@ -25,10 +24,10 @@ export class MemberRepository {
         return await this.memberRepository.save(memberEntityClass);
     }
 
-    async memberLogin(memberLoginDto: MemberLoginDto): Promise<MemberEntity | null> {
+    async findByMemberId(memberId: number): Promise<MemberEntity | null> {
         return await this.memberRepository.findOne({
             where: {
-                memberId: memberLoginDto.memberId
+                memberId: memberId
             }
         });
     }

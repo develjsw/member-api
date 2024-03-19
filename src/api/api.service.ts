@@ -66,6 +66,16 @@ export class ApiService {
         return await this.start(config);
     }
 
+    async deleteApi(url: string, data?: object): Promise<any> {
+        let config: AxiosRequestConfig = {
+            url: url,
+            method: 'DELETE' as Method
+        };
+
+        if (data) config = { ...config, data: data };
+        return await this.start(config);
+    }
+
     async putApi(url: string, data?: object): Promise<any> {
         let config: AxiosRequestConfig = {
             url: url,

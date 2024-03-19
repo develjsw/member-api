@@ -6,7 +6,8 @@ export default () => ({
                 endpoint: {
                     v1: {
                         get: '/api/v1/redis/:key',
-                        set: '/api/v1/redis'
+                        set: '/api/v1/redis',
+                        del: '/api/v1/redis/:key'
                     }
                 }
             },

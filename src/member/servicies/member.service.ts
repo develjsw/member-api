@@ -7,6 +7,7 @@ import { MemberLoginDto } from '../dto/member-login.dto';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { ApiService } from '../../api/api.service';
+import { MemberLogoutDto } from '../dto/member-logout.dto';
 
 @Injectable()
 export class MemberService {
@@ -38,7 +39,7 @@ export class MemberService {
     }
 
     async memberLogin(memberLoginDto: MemberLoginDto): Promise<MemberLoginDto> {
-        const memberInfo = await this.memberRepository.memberLogin(memberLoginDto);
+        const memberInfo = await this.memberRepository.findByMemberId(memberLoginDto.memberId);
 
         if (!memberInfo) {
             throw new BadRequestException('there is no matching member information');
@@ -70,6 +71,49 @@ export class MemberService {
             // TODO : file log 적재 필요
             console.log(error.response.data);
             throw new InternalServerErrorException();
+        }
+    }
+
+    async memberLogout(memberLogoutDto: MemberLogoutDto): Promise<object> {
+        // Redis에 존재하는 회원 정보
+        const redisMemberInfo = await this.apiService
+            .init()
+            .getApi(
+                this.redisApi.concat(
+                    this.configService
+                        .get('apis.in.redis.endpoint.v1.get')
+                        .replace(':key', `in-member-api:member-id:${memberLogoutDto.memberId}:info`)
+                )
+            )
+            .then((res) => {
+                return res.data;
+            })
+            .catch((error) => {
+                throw new InternalServerErrorException(error);
+            });
+
+        if (!redisMemberInfo) {
+            throw new BadRequestException("we couldn't find matching member information");
+        }
+
+        try {
+            // Redis 회원 정보 삭제 (=로그아웃)
+            await this.apiService
+                .init()
+                .deleteApi(
+                    this.redisApi.concat(
+                        this.configService
+                            .get('apis.in.redis.endpoint.v1.del')
+                            .replace(':key', `in-member-api:member-id:${memberLogoutDto.memberId}:info`)
+                    )
+                );
+
+            // TODO : 임시 반환 형식 - 공통 모듈 생성 후 적용 예정
+            return {
+                message: 'Success'
+            };
+        } catch (error) {
+            throw new InternalServerErrorException(error);
         }
     }
 }
