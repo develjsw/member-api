@@ -38,7 +38,7 @@ export class MemberService {
         }
     }
 
-    async memberLogin(memberLoginDto: MemberLoginDto): Promise<MemberLoginDto> {
+    async memberLogin(memberLoginDto: MemberLoginDto): Promise<MemberEntity> {
         const memberInfo = await this.memberRepository.findByMemberId(memberLoginDto.memberId);
 
         if (!memberInfo) {
@@ -65,7 +65,7 @@ export class MemberService {
                     expire: 1000 * 60 * 60 * 3 // 3시간
                 });
 
-            delete memberInfo.password;
+            //delete memberInfo.password;
             return memberInfo;
         } catch (error) {
             // TODO : file log 적재 필요

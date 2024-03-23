@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Post,
+    Put,
+    UsePipes,
+    ValidationPipe,
+    ParseIntPipe,
+    UseInterceptors,
+    ClassSerializerInterceptor
+} from '@nestjs/common';
 import { MemberService } from './servicies/member.service';
 import { MemberAuthService } from './servicies/member-auth.service';
 import { MemberSignupDto } from './dto/member-signup.dto';
@@ -21,6 +34,9 @@ export class MemberController {
      * 회원 가입
      * @param memberSignupDto
      */
+    // ClassSerializerInterceptor 는 메소드에서 리턴된 값을 가져와서 class-transformer 패키지에서 instanceToPlain()함수를 적용함
+    // 반환 타입이 MemberEntity 이므로 엔티티 내부에 exclude 되어있는 password 는 반환하지 않음
+    @UseInterceptors(ClassSerializerInterceptor)
     @Post('signup')
     @UsePipes(ValidationPipe)
     async signup(@Body() memberSignupDto: MemberSignupDto): Promise<MemberEntity> {
@@ -31,6 +47,7 @@ export class MemberController {
      * 로그인
      * @param memberLoginDto
      */
+    @UseInterceptors(ClassSerializerInterceptor)
     @Post('login')
     @UsePipes(ValidationPipe)
     async login(@Body() memberLoginDto: MemberLoginDto) {
@@ -48,7 +65,9 @@ export class MemberController {
     }
 
     @Get(':memberId')
-    async detail() {}
+    async detail(@Param('memberId', ParseIntPipe) memberId: number) {
+        //await this.memberService.memberDetail(memberId);
+    }
 
     @Put(':memberId')
     async modify() {}
