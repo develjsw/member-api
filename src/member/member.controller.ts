@@ -27,7 +27,6 @@ export class MemberController {
         private readonly memberAuthService: MemberAuthService
     ) {}
 
-    // TODO : 회원 정보 수정 (only DB? Redis+DB?)
     // TODO : 회원 탈퇴 (only DB? Redis+DB?)
 
     /**

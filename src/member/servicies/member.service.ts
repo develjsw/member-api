@@ -154,6 +154,31 @@ export class MemberService {
             memberModifyDto.password = await hashBcrypt(memberModifyDto.password, this.saltOrRounds);
         }
 
+        // 업데이트 될 회원 정보
+        const newMemberInfo = { ...memberInfo, ...memberModifyDto };
+
+        try {
+            await this.apiService
+                .init()
+                .postApi(this.redisApi.concat(this.configService.get('apis.in.redis.endpoint.v1.set')), {
+                    key: `in-member-api:member-id:${newMemberInfo.memberId}:info`,
+                    value: {
+                        memberId: newMemberInfo.memberId,
+                        memberName: newMemberInfo.memberName,
+                        email: newMemberInfo.email,
+                        isSocialLogin: newMemberInfo.isSocialLogin,
+                        status: newMemberInfo.status,
+                        joinDate: newMemberInfo.joinDate,
+                        withdrawDate: newMemberInfo.withdrawDate,
+                        updateDate: newMemberInfo.updateDate,
+                        delDate: newMemberInfo.delDate
+                    },
+                    expire: 1000 * 60 * 60 * 3 // 3시간
+                });
+        } catch (error) {
+            throw new InternalServerErrorException('problem occurred while updating redis member information');
+        }
+
         try {
             return (await this.memberRepository.updateMember(memberId, memberModifyDto)).affected
                 ? { message: 'Success' }
