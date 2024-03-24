@@ -12,9 +12,12 @@ export class MemberRepository {
         this.memberRepository = this.dataSource.getRepository(MemberEntity);
     }
 
-    async findByEmail(email: string): Promise<Array<MemberEntity | []>> {
-        return await this.memberRepository.findBy({
-            email
+    async findEmail(email: string): Promise<{ email: string } | null> {
+        return await this.memberRepository.findOne({
+            select: ['email'],
+            where: {
+                email
+            }
         });
     }
 
@@ -30,7 +33,7 @@ export class MemberRepository {
         return await this.memberRepository.save(memberEntityClass);
     }
 
-    async findByMemberId(memberId: number): Promise<MemberEntity | null> {
+    async findMember(memberId: number): Promise<MemberEntity | null> {
         return await this.memberRepository.findOne({
             where: {
                 memberId: memberId

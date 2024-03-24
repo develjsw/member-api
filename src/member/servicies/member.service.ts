@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { ApiService } from '../../api/api.service';
 import { MemberLogoutDto } from '../dto/member-logout.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class MemberService {
@@ -24,8 +25,8 @@ export class MemberService {
     }
 
     async memberSignup(memberSignupDto: MemberSignupDto): Promise<MemberEntity> {
-        const duplicateEmail = await this.memberRepository.findByEmail(memberSignupDto.email);
-        if (duplicateEmail.length) {
+        const duplicateEmail = await this.memberRepository.findEmail(memberSignupDto.email);
+        if (duplicateEmail) {
             throw new BadRequestException('is a duplicate email');
         }
 
@@ -39,8 +40,7 @@ export class MemberService {
     }
 
     async memberLogin(memberLoginDto: MemberLoginDto): Promise<MemberEntity> {
-        const memberInfo = await this.memberRepository.findByMemberId(memberLoginDto.memberId);
-
+        const memberInfo = await this.memberRepository.findMember(memberLoginDto.memberId);
         if (!memberInfo) {
             throw new BadRequestException('there is no matching member information');
         }
@@ -60,7 +60,12 @@ export class MemberService {
                         memberId: memberInfo.memberId,
                         memberName: memberInfo.memberName,
                         email: memberInfo.email,
-                        isSocialLogin: memberInfo.isSocialLogin
+                        isSocialLogin: memberInfo.isSocialLogin,
+                        status: memberInfo.status,
+                        joinDate: memberInfo.joinDate,
+                        withdrawDate: memberInfo.withdrawDate,
+                        updateDate: memberInfo.updateDate,
+                        delDate: memberInfo.delDate
                     },
                     expire: 1000 * 60 * 60 * 3 // 3시간
                 });
@@ -74,7 +79,7 @@ export class MemberService {
         }
     }
 
-    async memberLogout(memberLogoutDto: MemberLogoutDto): Promise<object> {
+    async memberLogout(memberLogoutDto: MemberLogoutDto): Promise<{ message: string }> {
         // Redis에 존재하는 회원 정보
         const redisMemberInfo = await this.apiService
             .init()
@@ -115,5 +120,26 @@ export class MemberService {
         } catch (error) {
             throw new InternalServerErrorException(error);
         }
+    }
+
+    async memberDetail(memberId: number): Promise<MemberEntity> {
+        // Redis에 데이터 존재하는 경우 해당 데이터 반환
+        const redisMemberInfo: MemberEntity = await this.apiService
+            .init()
+            .getApi(
+                this.redisApi.concat(
+                    this.configService
+                        .get('apis.in.redis.endpoint.v1.get')
+                        .replace(':key', `in-member-api:member-id:${memberId}:info`)
+                )
+            )
+            .then((res) => {
+                return res.data;
+            })
+            .catch(() => {});
+
+        if (redisMemberInfo) return plainToInstance(MemberEntity, redisMemberInfo);
+
+        return await this.memberRepository.findMember(memberId);
     }
 }

@@ -26,7 +26,6 @@ export class MemberController {
         private readonly memberAuthService: MemberAuthService
     ) {}
 
-    // TODO : 회원 상세 정보 조회 (only DB? Redis+DB?)
     // TODO : 회원 정보 수정 (only DB? Redis+DB?)
     // TODO : 회원 탈퇴 (only DB? Redis+DB?)
 
@@ -64,9 +63,14 @@ export class MemberController {
         return await this.memberService.memberLogout(memberLogoutDto);
     }
 
+    /**
+     * 회원 상세 정보
+     * @param memberId
+     */
+    @UseInterceptors(ClassSerializerInterceptor)
     @Get(':memberId')
     async detail(@Param('memberId', ParseIntPipe) memberId: number) {
-        //await this.memberService.memberDetail(memberId);
+        return await this.memberService.memberDetail(memberId);
     }
 
     @Put(':memberId')
