@@ -1,14 +1,15 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { MemberRepository } from '../repositories/member.repository';
-import { MemberSignupDto } from '../dto/member-signup.dto';
 import { MemberEntity } from '../entities/member.entity';
 import { hashBcrypt, compareHashBcrypt } from '../../util';
-import { MemberLoginDto } from '../dto/member-login.dto';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { ApiService } from '../../api/api.service';
-import { MemberLogoutDto } from '../dto/member-logout.dto';
 import { plainToInstance } from 'class-transformer';
+import { MemberSignupDto } from '../dto/member-signup.dto';
+import { MemberLoginDto } from '../dto/member-login.dto';
+import { MemberLogoutDto } from '../dto/member-logout.dto';
+import { MemberModifyDto } from '../dto/member-modify.dto';
 
 @Injectable()
 export class MemberService {
@@ -141,5 +142,24 @@ export class MemberService {
         if (redisMemberInfo) return plainToInstance(MemberEntity, redisMemberInfo);
 
         return await this.memberRepository.findMember(memberId);
+    }
+
+    async memberModify(memberId: number, memberModifyDto: MemberModifyDto): Promise<{ message: string }> {
+        const memberInfo = await this.memberRepository.findMember(memberId);
+        if (!memberInfo) {
+            throw new BadRequestException('memberId does not exist');
+        }
+
+        if (memberModifyDto.hasOwnProperty('password')) {
+            memberModifyDto.password = await hashBcrypt(memberModifyDto.password, this.saltOrRounds);
+        }
+
+        try {
+            return (await this.memberRepository.updateMember(memberId, memberModifyDto)).affected
+                ? { message: 'Success' }
+                : { message: 'Fail' };
+        } catch (error) {
+            throw new InternalServerErrorException(error.message);
+        }
     }
 }

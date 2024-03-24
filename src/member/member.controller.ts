@@ -14,10 +14,11 @@ import {
 } from '@nestjs/common';
 import { MemberService } from './servicies/member.service';
 import { MemberAuthService } from './servicies/member-auth.service';
-import { MemberSignupDto } from './dto/member-signup.dto';
 import { MemberEntity } from './entities/member.entity';
+import { MemberSignupDto } from './dto/member-signup.dto';
 import { MemberLoginDto } from './dto/member-login.dto';
 import { MemberLogoutDto } from './dto/member-logout.dto';
+import { MemberModifyDto } from './dto/member-modify.dto';
 
 @Controller('api/v1/members')
 export class MemberController {
@@ -73,8 +74,16 @@ export class MemberController {
         return await this.memberService.memberDetail(memberId);
     }
 
+    /**
+     * 회원 정보 수정
+     * @param memberId
+     * @param memberModifyDto
+     */
     @Put(':memberId')
-    async modify() {}
+    @UsePipes(ValidationPipe)
+    async modify(@Param('memberId', ParseIntPipe) memberId: number, @Body() memberModifyDto: MemberModifyDto) {
+        return await this.memberService.memberModify(memberId, memberModifyDto);
+    }
 
     @Delete(':memberId')
     async withdraw() {}

@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, UpdateResult } from 'typeorm';
 import { MemberEntity } from '../entities/member.entity';
-import { MemberSignupDto } from '../dto/member-signup.dto';
 import { plainToInstance } from 'class-transformer';
+import { MemberSignupDto } from '../dto/member-signup.dto';
+import { MemberModifyDto } from '../dto/member-modify.dto';
 
 @Injectable()
 export class MemberRepository {
@@ -39,5 +40,9 @@ export class MemberRepository {
                 memberId: memberId
             }
         });
+    }
+
+    async updateMember(memberId: number, memberModifyDto: MemberModifyDto): Promise<UpdateResult> {
+        return await this.memberRepository.update(memberId, memberModifyDto);
     }
 }
