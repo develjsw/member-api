@@ -180,7 +180,24 @@ export class MemberService {
         }
 
         try {
-            return (await this.memberRepository.updateMember(memberId, memberModifyDto)).affected
+            return (await this.memberRepository.updateMember(memberId, plainToInstance(MemberEntity, memberModifyDto)))
+                .affected
+                ? { message: 'Success' }
+                : { message: 'Fail' };
+        } catch (error) {
+            throw new InternalServerErrorException(error.message);
+        }
+    }
+
+    async memberWithdraw(memberId: number): Promise<{ message: string }> {
+        // TODO : Redis 데이터 업데이트 OR 삭제 처리
+        try {
+            return (
+                await this.memberRepository.updateMember(
+                    memberId,
+                    plainToInstance(MemberEntity, { withdrawDate: new Date() })
+                )
+            ).affected
                 ? { message: 'Success' }
                 : { message: 'Fail' };
         } catch (error) {

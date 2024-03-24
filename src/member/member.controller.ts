@@ -24,10 +24,8 @@ import { MemberModifyDto } from './dto/member-modify.dto';
 export class MemberController {
     constructor(
         private readonly memberService: MemberService,
-        private readonly memberAuthService: MemberAuthService
+        private readonly memberAuthService: MemberAuthService // TODO : 이메일 인증 로직 추가 후 사용 예정
     ) {}
-
-    // TODO : 회원 탈퇴 (only DB? Redis+DB?)
 
     /**
      * 회원 가입
@@ -84,6 +82,12 @@ export class MemberController {
         return await this.memberService.memberModify(memberId, memberModifyDto);
     }
 
+    /**
+     * 회원 탈퇴 (soft delete)
+     * @param memberId
+     */
     @Delete(':memberId')
-    async withdraw() {}
+    async withdraw(@Param('memberId', ParseIntPipe) memberId: number) {
+        return await this.memberService.memberWithdraw(memberId);
+    }
 }

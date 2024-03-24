@@ -42,7 +42,7 @@ export class MemberRepository {
         });
     }
 
-    async updateMember(memberId: number, memberModifyDto: MemberModifyDto): Promise<UpdateResult> {
-        return await this.memberRepository.update(memberId, memberModifyDto);
+    async updateMember(memberId: number, memberDto: MemberEntity): Promise<UpdateResult> {
+        return await this.memberRepository.update(memberId, memberDto);
     }
 }
