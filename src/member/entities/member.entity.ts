@@ -30,7 +30,7 @@ export class MemberEntity {
     })
     email: string;
 
-    @Column('varchar', {
+    @Column('char', {
         name: 'is_social_login'
     })
     isSocialLogin: string;
