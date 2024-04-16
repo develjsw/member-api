@@ -11,6 +11,10 @@
 | member-api > secret       | DB 접속 정보 등 secret file             |
 | member-api > src > config | 환경별 설정 파일, redis-api endpoint 파일 |
 
+### 특이사항
+
+mysql은 별도의 dockerfile없이 AWS RDB를 사용하여 연결
+
 ### docker 실행
 ~~~
 # member-api 프로젝트로 위치 이동
