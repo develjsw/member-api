@@ -4,19 +4,23 @@
 
 ### member-api 구성
 
-| 위치                        | 설명                                 |
-|---------------------------|---------------------------------------|
-| member-api                | 프로젝트 최상단                          |
-| member-api > dockerfile   | dockerfile                            |
-| member-api > secret       | DB 접속 정보 등 secret file             |
-| member-api > src > config | 환경별 설정 파일, redis-api endpoint 파일 |
+| 위치                              | 설명                                 |
+|---------------------------------|------------------------------------|
+| member-api                      | 프로젝트 최상단                           |
+| member-api > dockerfile         | dockerfile                         |
+| member-api > docker-compose.yml | docker-compose.yml (2024-04-17 추가) |
+| member-api > secret             | DB 접속 정보 등 secret file             |
+| member-api > src > config       | 환경별 설정 파일, redis-api endpoint 파일   |
 
 ### 특이사항
 
 mysql은 별도의 dockerfile없이 AWS RDB를 사용하여 연결
 
 ### docker 실행
+2024-04-17 - dockerfile ⮕ dockerfile + docker-compose.yml로 변경
 ~~~
+[ 1번 방식 - dockerfile ]
+
 # member-api 프로젝트로 위치 이동
 $ cd /d/www/nest-msa-api/member-api
 
@@ -38,6 +42,15 @@ $ docker logs member-api
 # 컨테이너 접속하여 정상 실행중인지 확인
 $ docker ps
 $ docker exec -it <container_id> bash
+~~~
+~~~
+[ 2번 방식 - dockerfile + docker-compose.yml ]
+
+# member-api 프로젝트로 위치 이동
+$ cd /d/www/nest-msa-api/member-api
+
+# 이미지 빌드 및 컨테이너 실행
+$ docker-compose up --build
 ~~~
 
 ### 컨테이너 오케스트레이션 사용 예정
