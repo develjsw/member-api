@@ -8,16 +8,17 @@
 |---------------------------------|------------------------------------|
 | member-api                      | 프로젝트 최상단                           |
 | member-api > dockerfile         | dockerfile                         |
-| member-api > docker-compose.yml | docker-compose.yml (2024-04-17 추가) |
+| member-api > docker-compose.yml | docker-compose.yml |
 | member-api > secret             | DB 접속 정보 등 secret file             |
 | member-api > src > config       | 환경별 설정 파일, redis-api endpoint 파일   |
 
 ### 특이사항
 
-mysql은 별도의 dockerfile없이 AWS RDB를 사용하여 연결
+mysql은 별도의 dockerfile없이 AWS RDB를 사용하여 연결  
+
+단일 dockerfile로 실행하는 경우 main.ts에서 config file을 통해 받아온 port를 주입해서 사용해도 문제가 없었으나, docker-compose.yml파일로 실행하는 경우 host를 포함한 외부와의 통신이 불가능하여 main.ts에 port 하드코딩 진행
 
 ### docker 실행
-2024-04-17 - dockerfile ⮕ dockerfile + docker-compose.yml로 변경
 ~~~
 [ 1번 방식 - dockerfile ]
 
@@ -28,7 +29,7 @@ $ cd /d/www/nest-msa-api/member-api
 $ docker build -t member-api -f ./dockerfile/Dockerfile-local .
 
 # 도커 컨테이너 실행
-$ docker run -d --name member-api -p 8001:8001 member-api
+$ docker run -d --name member-api -p 3001:8001 member-api
 
 ----------------------------------------------------------------
 ** 문제 발생 시 확인 (docker gui tool을 활용해도 됨) **
@@ -49,9 +50,13 @@ $ docker exec -it <container_id> bash
 # member-api 프로젝트로 위치 이동
 $ cd /d/www/nest-msa-api/member-api
 
-# 이미지 빌드 및 컨테이너 실행
-$ docker-compose up --build
+# 이미지 빌드 및 컨테이너 실행 (백그라운드로 실행)
+$ docker-compose up -d --build
 ~~~
+
+### docker container와 통신 확인
+1. browser에서 localhost:3001로 접속하여 확인
+2. curl http://localhost:3001 명령어를 통해 확인
 
 ### 컨테이너 오케스트레이션 사용 예정
 (Docker Swarm 또는 Kubernetes)
