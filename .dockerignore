@@ -1,12 +1,10 @@
-# Versioning and metadata
 .git
 .gitignore
+.idea
 .dockerignore
 
-# Build dependencies
 dist
 node_modules
 coverage
 
-# env
 .env
