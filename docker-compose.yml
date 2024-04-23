@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   member:
     image: member-api:latest
@@ -5,35 +7,13 @@ services:
       context: .
       dockerfile: ./dockerfile/Dockerfile-local
     ports:
-      - 8001:8001
+      - "3001:8001"
     environment:
-      - NODE_ENV=local
       - PORT=8001
-    deploy:
-      replicas: 4
-      placement:
-        max_replicas_per_node: 2
-      update_config:
-        parallelism: 1
-        delay: 30s
-        order: stop-first
-        failure_action: rollback
-      rollback_config:
-        parallelism: 1
-        delay: 30s
-        order: stop-first
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 300M
+      - NODE_ENV=local
     restart: always
     networks:
       - msa-api-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "50m"
-        max-file: "2"
 
 networks:
   msa-api-network:
