@@ -13,12 +13,14 @@ export class MemberAuthEntity {
     memberId: number;
 
     @Column('varchar', {
-        name: 'verification_code'
+        name: 'verification_code',
+        nullable: true
     })
     verificationCode: string;
 
     @Column('datetime', {
-        name: 'verification_expiry'
+        name: 'verification_expiry',
+        nullable: true
     })
     verificationExpiry: Date;
 

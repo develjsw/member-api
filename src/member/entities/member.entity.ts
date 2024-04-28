@@ -26,7 +26,8 @@ export class MemberEntity {
     password: string;
 
     @Column('varchar', {
-        name: 'email'
+        name: 'email',
+        nullable: true
     })
     email: string;
 
@@ -41,22 +42,26 @@ export class MemberEntity {
     status: number;
 
     @Column('datetime', {
-        name: 'join_date'
+        name: 'join_date',
+        nullable: true
     })
     joinDate: Date;
 
     @Column('datetime', {
-        name: 'withdraw_date'
+        name: 'withdraw_date',
+        nullable: true
     })
     withdrawDate: Date;
 
     @Column('datetime', {
-        name: 'update_date'
+        name: 'update_date',
+        nullable: true
     })
     updateDate: Date;
 
     @Column('datetime', {
-        name: 'del_date'
+        name: 'del_date',
+        nullable: true
     })
     delDate: Date;
 }

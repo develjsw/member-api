@@ -28,7 +28,7 @@ if (process.env.NODE_ENV === 'production') {
         }),
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
-            useFactory: (configService: ConfigService) => configService.get('database.mysql'),
+            useFactory: (configService: ConfigService) => configService.get('config-info.database.mysql'),
             inject: [ConfigService]
         }),
         MemberModule
