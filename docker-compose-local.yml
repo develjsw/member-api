@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  ## DB는 RDS로 변경 할 예정 ##
+  mysql-db:
+    image: mysql:latest
+    container_name: mysql-server1
+    ports:
+      - "33061:3306"
+    ## 환경 변수는 별도의 env_file로 관리 또는 docker secret 활용 예정 ##
+    environment:
+      - MYSQL_ROOT_PASSWORD=test1234//
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=test1234//
+      - MYSQL_DATABASE=msa
+    volumes:
+      - ../mysql-data:/var/lib/mysql
+    restart: always
+    networks:
+      - msa-api-network
+
+  member-api:
+    image: member-api:latest
+    build:
+      context: .
+      dockerfile: ./dockerfile/Dockerfile-local
+    ports:
+      - "3001:8001"
+    environment:
+      - PORT=8001
+      - NODE_ENV=local
+      - MYSQL_HOST_ENV=mysql-db
+    restart: always
+    networks:
+      - msa-api-network
+    depends_on:
+      - mysql-db
+
+networks:
+  msa-api-network:

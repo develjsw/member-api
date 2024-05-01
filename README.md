@@ -48,8 +48,8 @@ $ docker exec -it <container_id> bash
 # member-api 프로젝트로 위치 이동
 $ cd /d/www/nest-msa-api/member-api
 
-# 이미지 빌드 및 컨테이너 실행 (백그라운드로 실행)
-$ docker-compose up -d --build
+# 이미지 빌드 및 컨테이너 백그라운드로 실행 (local)
+$ docker-compose -f docker-compose-local.yml up -d --build
 ~~~
 
 ### docker container ip 확인
