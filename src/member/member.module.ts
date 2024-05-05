@@ -6,19 +6,22 @@ import { MemberAuthService } from './servicies/member-auth.service';
 import { MemberAuthRepository } from './repositories/member-auth.repository';
 import { HttpModule } from '@nestjs/axios';
 import { ApiService } from '../api/api.service';
+import { CommonModule } from '../common/common.module';
+import { BcryptService } from '../common/bcrypt/bcrypt.service';
 
 @Module({
     imports: [
-        HttpModule
+        HttpModule,
         // HttpModule.registerAsync({
         //     useFactory: () => ({
         //         timeout: 5000, // ms
         //         maxRedirects: 3
         //     })
         // })
+        CommonModule
     ],
     controllers: [MemberController],
-    providers: [MemberService, MemberRepository, MemberAuthService, MemberAuthRepository, ApiService],
+    providers: [MemberService, MemberRepository, MemberAuthService, MemberAuthRepository, ApiService, BcryptService],
     exports: []
 })
 export class MemberModule {}

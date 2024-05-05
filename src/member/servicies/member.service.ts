@@ -1,15 +1,16 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { MemberRepository } from '../repositories/member.repository';
 import { MemberEntity } from '../entities/member.entity';
-import { hashBcrypt, compareHashBcrypt } from '../../util';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { ApiService, TApiResponse } from '../../api/api.service';
+import { TMessageResponse } from '../../common/response/response.service';
 import { plainToInstance } from 'class-transformer';
 import { MemberSignupDto } from '../dto/member-signup.dto';
 import { MemberLoginDto } from '../dto/member-login.dto';
 import { MemberLogoutDto } from '../dto/member-logout.dto';
 import { MemberModifyDto } from '../dto/member-modify.dto';
+import { BcryptService } from '../../common/bcrypt/bcrypt.service';
 
 @Injectable()
 export class MemberService {
@@ -20,7 +21,8 @@ export class MemberService {
         private readonly memberRepository: MemberRepository,
         private readonly configService: ConfigService,
         private readonly httpService: HttpService,
-        private readonly apiService: ApiService
+        private readonly apiService: ApiService,
+        private readonly bcryptService: BcryptService
     ) {
         this.redisApi = this.configService.get('apis.in.redis.address');
     }
@@ -31,7 +33,7 @@ export class MemberService {
             throw new BadRequestException('is a duplicate email');
         }
 
-        memberSignupDto.password = await hashBcrypt(memberSignupDto.password, this.saltOrRounds);
+        memberSignupDto.password = await this.bcryptService.hashBcrypt(memberSignupDto.password, this.saltOrRounds);
 
         try {
             return await this.memberRepository.memberSignup(memberSignupDto);
@@ -47,9 +49,11 @@ export class MemberService {
         }
 
         // 비밀번호 검증
-        if (!(await compareHashBcrypt(memberLoginDto.password, memberInfo.password))) {
+        if (!(await this.bcryptService.compareHashBcrypt(memberLoginDto.password, memberInfo.password))) {
             throw new BadRequestException('invalid password');
         }
+
+        const memberEntityInstance = plainToInstance(MemberEntity, memberInfo);
 
         // 회원 정보 Redis 저장
         try {
@@ -57,22 +61,12 @@ export class MemberService {
                 .init()
                 .callApi(this.redisApi.concat(this.configService.get('apis.in.redis.endpoint.v1.set')), 'POST', {
                     key: `in-member-api:member-id:${memberInfo.memberId}:info`,
-                    value: {
-                        memberId: memberInfo.memberId,
-                        memberName: memberInfo.memberName,
-                        email: memberInfo.email,
-                        isSocialLogin: memberInfo.isSocialLogin,
-                        status: memberInfo.status,
-                        joinDate: memberInfo.joinDate,
-                        withdrawDate: memberInfo.withdrawDate,
-                        updateDate: memberInfo.updateDate,
-                        delDate: memberInfo.delDate
-                    },
+                    value: memberEntityInstance,
                     expire: 1000 * 60 * 60 * 3 // 3시간
                 });
 
             //delete memberInfo.password;
-            return memberInfo;
+            return memberEntityInstance;
         } catch (error) {
             // TODO : file log 적재 필요
             console.log(error.response.data);
@@ -80,7 +74,7 @@ export class MemberService {
         }
     }
 
-    async memberLogout(memberLogoutDto: MemberLogoutDto): Promise<{ message: string }> {
+    async memberLogout(memberLogoutDto: MemberLogoutDto): Promise<TMessageResponse> {
         let redisMemberInfo; // Redis에 존재하는 회원 정보
         try {
             redisMemberInfo = await this.apiService
@@ -147,35 +141,26 @@ export class MemberService {
         return await this.memberRepository.findMember(memberId);
     }
 
-    async memberModify(memberId: number, memberModifyDto: MemberModifyDto): Promise<{ message: string }> {
+    async memberModify(memberId: number, memberModifyDto: MemberModifyDto): Promise<TMessageResponse> {
         const memberInfo: MemberEntity | null = await this.memberRepository.findMember(memberId);
         if (!memberInfo) {
             throw new BadRequestException('memberId does not exist');
         }
 
         if (memberModifyDto.hasOwnProperty('password')) {
-            memberModifyDto.password = await hashBcrypt(memberModifyDto.password, this.saltOrRounds);
+            memberModifyDto.password = await this.bcryptService.hashBcrypt(memberModifyDto.password, this.saltOrRounds);
         }
 
         // 업데이트 될 회원 정보
         const newMemberInfo = { ...memberInfo, ...memberModifyDto };
+        const memberEntityInstance = plainToInstance(MemberEntity, newMemberInfo);
 
         try {
             await this.apiService
                 .init()
                 .callApi(this.redisApi.concat(this.configService.get('apis.in.redis.endpoint.v1.set')), 'POST', {
                     key: `in-member-api:member-id:${newMemberInfo.memberId}:info`,
-                    value: {
-                        memberId: newMemberInfo.memberId,
-                        memberName: newMemberInfo.memberName,
-                        email: newMemberInfo.email,
-                        isSocialLogin: newMemberInfo.isSocialLogin,
-                        status: newMemberInfo.status,
-                        joinDate: newMemberInfo.joinDate,
-                        withdrawDate: newMemberInfo.withdrawDate,
-                        updateDate: newMemberInfo.updateDate,
-                        delDate: newMemberInfo.delDate
-                    },
+                    value: memberEntityInstance,
                     expire: 1000 * 60 * 60 * 3 // 3시간
                 });
         } catch (error) {
@@ -192,7 +177,7 @@ export class MemberService {
         }
     }
 
-    async memberWithdraw(memberId: number): Promise<{ message: string }> {
+    async memberWithdraw(memberId: number): Promise<TMessageResponse> {
         // TODO : Redis 데이터 업데이트 OR 삭제 처리
         try {
             return (
