@@ -4,7 +4,7 @@ import { MemberEntity } from '../entities/member.entity';
 import { hashBcrypt, compareHashBcrypt } from '../../util';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
-import { ApiService } from '../../api/api.service';
+import { ApiService, TApiResponse } from '../../api/api.service';
 import { plainToInstance } from 'class-transformer';
 import { MemberSignupDto } from '../dto/member-signup.dto';
 import { MemberLoginDto } from '../dto/member-login.dto';
@@ -26,7 +26,7 @@ export class MemberService {
     }
 
     async memberSignup(memberSignupDto: MemberSignupDto): Promise<MemberEntity> {
-        const duplicateEmail = await this.memberRepository.findEmail(memberSignupDto.email);
+        const duplicateEmail: { email: string } | null = await this.memberRepository.findEmail(memberSignupDto.email);
         if (duplicateEmail) {
             throw new BadRequestException('is a duplicate email');
         }
@@ -41,7 +41,7 @@ export class MemberService {
     }
 
     async memberLogin(memberLoginDto: MemberLoginDto): Promise<MemberEntity> {
-        const memberInfo = await this.memberRepository.findMember(memberLoginDto.memberId);
+        const memberInfo: MemberEntity | null = await this.memberRepository.findMember(memberLoginDto.memberId);
         if (!memberInfo) {
             throw new BadRequestException('there is no matching member information');
         }
@@ -55,7 +55,7 @@ export class MemberService {
         try {
             await this.apiService
                 .init()
-                .postApi(this.redisApi.concat(this.configService.get('apis.in.redis.endpoint.v1.set')), {
+                .callApi(this.redisApi.concat(this.configService.get('apis.in.redis.endpoint.v1.set')), 'POST', {
                     key: `in-member-api:member-id:${memberInfo.memberId}:info`,
                     value: {
                         memberId: memberInfo.memberId,
@@ -81,37 +81,36 @@ export class MemberService {
     }
 
     async memberLogout(memberLogoutDto: MemberLogoutDto): Promise<{ message: string }> {
-        // Redis에 존재하는 회원 정보
-        const redisMemberInfo = await this.apiService
-            .init()
-            .getApi(
-                this.redisApi.concat(
-                    this.configService
-                        .get('apis.in.redis.endpoint.v1.get')
-                        .replace(':key', `in-member-api:member-id:${memberLogoutDto.memberId}:info`)
-                )
-            )
-            .then((res) => {
-                return res.data;
-            })
-            .catch((error) => {
-                throw new InternalServerErrorException(error);
-            });
-
-        if (!redisMemberInfo) {
-            throw new BadRequestException("we couldn't find matching member information");
+        let redisMemberInfo; // Redis에 존재하는 회원 정보
+        try {
+            redisMemberInfo = await this.apiService
+                .init()
+                .callApi(
+                    this.redisApi.concat(
+                        this.configService
+                            .get('apis.in.redis.endpoint.v1.get')
+                            .replace(':key', `in-member-api:member-id:${memberLogoutDto.memberId}:info`)
+                    ),
+                    'GET'
+                );
+        } catch (error) {
+            throw new InternalServerErrorException(error);
         }
+
+        if (!Object.keys(redisMemberInfo.data))
+            throw new BadRequestException("we couldn't find matching member information");
 
         try {
             // Redis 회원 정보 삭제 (=로그아웃)
             await this.apiService
                 .init()
-                .deleteApi(
+                .callApi(
                     this.redisApi.concat(
                         this.configService
                             .get('apis.in.redis.endpoint.v1.del')
                             .replace(':key', `in-member-api:member-id:${memberLogoutDto.memberId}:info`)
-                    )
+                    ),
+                    'DELETE'
                 );
 
             // TODO : 임시 반환 형식 - 공통 모듈 생성 후 적용 예정
@@ -125,27 +124,31 @@ export class MemberService {
 
     async memberDetail(memberId: number): Promise<MemberEntity> {
         // Redis에 데이터 존재하는 경우 해당 데이터 반환
-        const redisMemberInfo: MemberEntity = await this.apiService
+        const redisMemberInfo: MemberEntity | null = await this.apiService
             .init()
-            .getApi(
+            .callApi(
                 this.redisApi.concat(
                     this.configService
                         .get('apis.in.redis.endpoint.v1.get')
                         .replace(':key', `in-member-api:member-id:${memberId}:info`)
-                )
+                ),
+                'GET'
             )
-            .then((res) => {
-                return res.data;
+            .then((res: TApiResponse): MemberEntity => {
+                return plainToInstance(MemberEntity, res.data);
             })
-            .catch(() => {});
+            .catch(() => {
+                return null;
+            });
 
-        if (redisMemberInfo) return plainToInstance(MemberEntity, redisMemberInfo);
+        if (redisMemberInfo && Object.keys(redisMemberInfo).length) return redisMemberInfo;
 
+        // 없는 경우 DB 조회
         return await this.memberRepository.findMember(memberId);
     }
 
     async memberModify(memberId: number, memberModifyDto: MemberModifyDto): Promise<{ message: string }> {
-        const memberInfo = await this.memberRepository.findMember(memberId);
+        const memberInfo: MemberEntity | null = await this.memberRepository.findMember(memberId);
         if (!memberInfo) {
             throw new BadRequestException('memberId does not exist');
         }
@@ -160,7 +163,7 @@ export class MemberService {
         try {
             await this.apiService
                 .init()
-                .postApi(this.redisApi.concat(this.configService.get('apis.in.redis.endpoint.v1.set')), {
+                .callApi(this.redisApi.concat(this.configService.get('apis.in.redis.endpoint.v1.set')), 'POST', {
                     key: `in-member-api:member-id:${newMemberInfo.memberId}:info`,
                     value: {
                         memberId: newMemberInfo.memberId,
