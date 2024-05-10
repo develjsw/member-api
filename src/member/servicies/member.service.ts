@@ -69,8 +69,8 @@ export class MemberService {
             return memberEntityInstance;
         } catch (error) {
             // TODO : file log 적재 필요
-            console.log(error.response.data);
-            throw new InternalServerErrorException();
+            console.error(error);
+            throw new InternalServerErrorException('login failed');
         }
     }
 
@@ -88,7 +88,8 @@ export class MemberService {
                     'GET'
                 );
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            console.error(error.response);
+            throw new InternalServerErrorException('not logged in');
         }
 
         if (!Object.keys(redisMemberInfo.data))
@@ -112,7 +113,8 @@ export class MemberService {
                 message: 'Success'
             };
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            console.error(error.response);
+            throw new InternalServerErrorException('logout failed');
         }
     }
 
@@ -164,6 +166,7 @@ export class MemberService {
                     expire: 1000 * 60 * 60 * 3 // 3시간
                 });
         } catch (error) {
+            console.error(error.response);
             throw new InternalServerErrorException('problem occurred while updating redis member information');
         }
 
