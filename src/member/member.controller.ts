@@ -10,7 +10,8 @@ import {
     ValidationPipe,
     ParseIntPipe,
     UseInterceptors,
-    ClassSerializerInterceptor
+    ClassSerializerInterceptor,
+    UseGuards
 } from '@nestjs/common';
 import { MemberService } from './servicies/member.service';
 import { MemberAuthService } from './servicies/member-auth.service';
@@ -19,6 +20,7 @@ import { MemberSignupDto } from './dto/member-signup.dto';
 import { MemberLoginDto } from './dto/member-login.dto';
 import { MemberLogoutDto } from './dto/member-logout.dto';
 import { MemberModifyDto } from './dto/member-modify.dto';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('api/v1/members')
 export class MemberController {
@@ -65,6 +67,7 @@ export class MemberController {
      * 회원 상세 정보
      * @param memberId
      */
+    @UseGuards(AuthGuard)
     @UseInterceptors(ClassSerializerInterceptor)
     @Get(':memberId')
     async detail(@Param('memberId', ParseIntPipe) memberId: number) {
@@ -76,6 +79,7 @@ export class MemberController {
      * @param memberId
      * @param memberModifyDto
      */
+    @UseGuards(AuthGuard)
     @Put(':memberId')
     @UsePipes(ValidationPipe)
     async modify(@Param('memberId', ParseIntPipe) memberId: number, @Body() memberModifyDto: MemberModifyDto) {
@@ -86,6 +90,7 @@ export class MemberController {
      * 회원 탈퇴 (soft delete)
      * @param memberId
      */
+    @UseGuards(AuthGuard)
     @Delete(':memberId')
     async withdraw(@Param('memberId', ParseIntPipe) memberId: number) {
         return await this.memberService.memberWithdraw(memberId);
