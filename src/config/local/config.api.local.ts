@@ -11,12 +11,12 @@ export default () => ({
                     }
                 }
             },
-            member: {
-                address: 'http://localhost:8001',
+            jwt: {
+                address: 'http://localhost:8004',
                 endpoint: {
                     v1: {
-                        signup: '/api/v1/members/signup',
-                        login: '/api/v1/members/login'
+                        create: '/api/v1/jwt',
+                        detail: '/api/v1/jwt'
                     }
                 }
             }
