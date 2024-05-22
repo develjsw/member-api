@@ -1,9 +1,14 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request } from 'express';
+import { ConfigService } from '@nestjs/config';
+import { ApiService } from '../api/api.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-    constructor() {}
+    constructor(
+        private readonly configService: ConfigService,
+        private readonly apiService: ApiService
+    ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
@@ -14,11 +19,13 @@ export class AuthGuard implements CanActivate {
         }
 
         try {
-            // TODO : token 유효성 체크 - JWT API 통신을 통해 값 전달
-            // const payload = await this.jwtService.verifyAsync(token, {
-            //     secret: jwtConstants.secret
-            // });
-            // request['user'] = payload;
+            const jwtDetailEndpoint = this.configService
+                .get('apis.in.jwt.address')
+                .concat(this.configService.get('apis.in.jwt.url.v1.detail'))
+                .concat('/' + token);
+
+            // token 유효성 체크
+            await this.apiService.init().callApi(jwtDetailEndpoint, 'GET');
         } catch {
             throw new UnauthorizedException();
         }
