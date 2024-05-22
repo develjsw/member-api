@@ -59,7 +59,7 @@ export class MemberService {
         try {
             await this.apiService
                 .init()
-                .callApi(this.redisApi.concat(this.configService.get('apis.in.redis.endpoint.v1.set')), 'POST', {
+                .callApi(this.redisApi.concat(this.configService.get('apis.in.redis.url.v1.set')), 'POST', {
                     key: `in-member-api:member-id:${memberInfo.memberId}:info`,
                     value: memberEntityInstance,
                     expire: 1000 * 60 * 60 * 3 // 3시간
@@ -82,7 +82,7 @@ export class MemberService {
                 .callApi(
                     this.redisApi.concat(
                         this.configService
-                            .get('apis.in.redis.endpoint.v1.get')
+                            .get('apis.in.redis.url.v1.get')
                             .replace(':key', `in-member-api:member-id:${memberLogoutDto.memberId}:info`)
                     ),
                     'GET'
@@ -102,7 +102,7 @@ export class MemberService {
                 .callApi(
                     this.redisApi.concat(
                         this.configService
-                            .get('apis.in.redis.endpoint.v1.del')
+                            .get('apis.in.redis.url.v1.del')
                             .replace(':key', `in-member-api:member-id:${memberLogoutDto.memberId}:info`)
                     ),
                     'DELETE'
@@ -125,7 +125,7 @@ export class MemberService {
             .callApi(
                 this.redisApi.concat(
                     this.configService
-                        .get('apis.in.redis.endpoint.v1.get')
+                        .get('apis.in.redis.url.v1.get')
                         .replace(':key', `in-member-api:member-id:${memberId}:info`)
                 ),
                 'GET'
@@ -160,7 +160,7 @@ export class MemberService {
         try {
             await this.apiService
                 .init()
-                .callApi(this.redisApi.concat(this.configService.get('apis.in.redis.endpoint.v1.set')), 'POST', {
+                .callApi(this.redisApi.concat(this.configService.get('apis.in.redis.url.v1.set')), 'POST', {
                     key: `in-member-api:member-id:${newMemberInfo.memberId}:info`,
                     value: memberEntityInstance,
                     expire: 1000 * 60 * 60 * 3 // 3시간
