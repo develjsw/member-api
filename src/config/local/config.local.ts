@@ -2,9 +2,9 @@ import { registerAs } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
 
-//const MYSQL_HOST = path.resolve('./secret/development/mysql-host');
-const MYSQL_USER_NAME = path.resolve('./secret/development/mysql-username');
-const MYSQL_PASSWORD = path.resolve('./secret/development/mysql-password');
+//const MYSQL_HOST = path.resolve('./secret/local/mysql-host');
+const MYSQL_USER_NAME = path.resolve('./secret/local/mysql-username');
+const MYSQL_PASSWORD = path.resolve('./secret/local/mysql-password');
 
 export default registerAs('config-info', () => ({
     port: parseInt(process.env.PORT, 10) || 8001,
