@@ -11,6 +11,7 @@ import productionConfigApi from './config/production/api.production.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MemberModule } from './member/member.module';
 import { LoggerMiddleware } from './common/logger/logger.middleware';
+import { SlackModule } from 'nestjs-slack-webhook';
 
 let config;
 let apiConfig;
@@ -40,6 +41,11 @@ switch (process.env.NODE_ENV) {
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => configService.get('config-info.database.mysql'),
             inject: [ConfigService]
+        }),
+        SlackModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => configService.get('config-info.webhook.slack')
         }),
         MemberModule
     ],

@@ -5,6 +5,7 @@ import * as path from 'path';
 //const MYSQL_HOST = path.resolve('./secret/production/mysql-host');
 const MYSQL_USER_NAME = path.resolve('./secret/production/mysql-username');
 const MYSQL_PASSWORD = path.resolve('./secret/production/mysql-password');
+const WEBHOOK_SLACK = path.resolve('./secret/production/webhook-slack');
 
 export default registerAs('config-info', () => ({
     port: parseInt(process.env.PORT, 10) || 8001,
@@ -21,6 +22,11 @@ export default registerAs('config-info', () => ({
             entities: ['dist/**/entities/*.entity{.ts,.js}'],
             synchronize: false,
             logging: 'all'
+        }
+    },
+    webhook: {
+        slack: {
+            url: fs.readFileSync(WEBHOOK_SLACK).toString()
         }
     }
 }));
