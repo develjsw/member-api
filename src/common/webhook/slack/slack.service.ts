@@ -1,20 +1,40 @@
 import { Injectable } from '@nestjs/common';
-import { InjectSlack } from 'nestjs-slack-webhook';
-import { IncomingWebhook, IncomingWebhookSendArguments } from '@slack/client';
-import { IncomingWebhookResult } from '@slack/webhook/dist/IncomingWebhook';
+import { IncomingWebhook } from '@slack/webhook';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SlackService {
-    @InjectSlack()
-    private readonly slack: IncomingWebhook;
+    private webhook: IncomingWebhook;
 
-    private async notify(args: IncomingWebhookSendArguments): Promise<IncomingWebhookResult> {
-        return await this.slack.send(args);
+    constructor(private readonly configService: ConfigService) {
+        this.webhook = new IncomingWebhook(this.configService.get('config-info.webhook.slack.url'));
     }
 
-    async send(text: string): Promise<void> {
-        await this.notify({
-            text
+    /**
+     * slack webhook 기본
+     * @param msg - 내용
+     */
+    async sendMessage(msg: string): Promise<void> {
+        await this.webhook.send({
+            text: msg
+        });
+    }
+
+    /**
+     * slack webhook 부분 커스터마이징
+     * @param title - 제목
+     * @param text - 내용
+     * @param color - 색상
+     */
+    async sendCustomMessage(title: string, text: string, color?: string): Promise<void> {
+        const custom = {
+            title: title,
+            text: text,
+            ...(color && { color })
+        };
+
+        await this.webhook.send({
+            attachments: [custom]
         });
     }
 }
