@@ -11,6 +11,7 @@ import { MemberLoginDto } from '../dto/member-login.dto';
 import { MemberLogoutDto } from '../dto/member-logout.dto';
 import { MemberModifyDto } from '../dto/member-modify.dto';
 import { BcryptService } from '../../common/bcrypt/bcrypt.service';
+import { SlackService } from '../../common/webhook/slack/slack.service';
 
 @Injectable()
 export class MemberService {
@@ -22,7 +23,8 @@ export class MemberService {
         private readonly configService: ConfigService,
         private readonly httpService: HttpService,
         private readonly apiService: ApiService,
-        private readonly bcryptService: BcryptService
+        private readonly bcryptService: BcryptService,
+        private readonly slackService: SlackService
     ) {
         this.redisApi = this.configService.get('apis.in.redis.address');
     }
@@ -68,8 +70,11 @@ export class MemberService {
             //delete memberInfo.password;
             return memberEntityInstance;
         } catch (error) {
-            // TODO : file log 적재 필요
-            console.error(error);
+            await this.slackService.sendCustomMessage(
+                '[ MemberLogin Error ]',
+                JSON.stringify({ target: '회원 ID', memberId: memberLoginDto.memberId }),
+                '#FF0000'
+            );
             throw new InternalServerErrorException('login failed');
         }
     }
@@ -88,7 +93,6 @@ export class MemberService {
                     'GET'
                 );
         } catch (error) {
-            console.error(error.response);
             throw new InternalServerErrorException('not logged in');
         }
 
@@ -113,7 +117,6 @@ export class MemberService {
                 message: 'Success'
             };
         } catch (error) {
-            console.error(error.response);
             throw new InternalServerErrorException('logout failed');
         }
     }
@@ -166,7 +169,11 @@ export class MemberService {
                     expire: 1000 * 60 * 60 * 3 // 3시간
                 });
         } catch (error) {
-            console.error(error.response);
+            await this.slackService.sendCustomMessage(
+                '[ MemberModify Error (Redis Update Fail) ]',
+                JSON.stringify({ target: '회원 ID', memberId: memberId }),
+                '#FF0000'
+            );
             throw new InternalServerErrorException('problem occurred while updating redis member information');
         }
 

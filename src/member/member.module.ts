@@ -8,6 +8,7 @@ import { HttpModule } from '@nestjs/axios';
 import { ApiService } from '../api/api.service';
 import { CommonModule } from '../common/common.module';
 import { BcryptService } from '../common/bcrypt/bcrypt.service';
+import { SlackService } from '../common/webhook/slack/slack.service';
 
 @Module({
     imports: [
@@ -21,7 +22,15 @@ import { BcryptService } from '../common/bcrypt/bcrypt.service';
         CommonModule
     ],
     controllers: [MemberController],
-    providers: [MemberService, MemberRepository, MemberAuthService, MemberAuthRepository, ApiService, BcryptService],
+    providers: [
+        MemberService,
+        MemberRepository,
+        MemberAuthService,
+        MemberAuthRepository,
+        ApiService,
+        BcryptService,
+        SlackService
+    ],
     exports: []
 })
 export class MemberModule {}
