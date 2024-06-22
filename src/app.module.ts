@@ -10,7 +10,7 @@ import developmentConfigApi from './config/development/api.development.config';
 import productionConfigApi from './config/production/api.production.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MemberModule } from './member/member.module';
-import { LoggerMiddleware } from './common/logger/logger.middleware';
+import { LoggerMiddleware } from './logger/logger.middleware';
 
 let config;
 let apiConfig;
