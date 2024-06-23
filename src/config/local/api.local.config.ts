@@ -2,7 +2,8 @@ export default () => ({
     apis: {
         in: {
             redis: {
-                address: 'http://host.docker.internal:9001',
+                address: 'http://localhost:9001', // local 사용 시
+                //address: 'http://host.docker.internal:9001', // local docker 사용 시
                 url: {
                     v1: {
                         get: '/api/v1/redis/:key',
