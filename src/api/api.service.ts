@@ -31,13 +31,10 @@ export class ApiService {
     }
 
     async setConfig(addConfig): Promise<AxiosRequestConfig> {
-        const initConfig: {
-            headers: RawAxiosRequestHeaders | AxiosHeaders;
-            responseType: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
-            timeout: number;
-        } = {
+        const initConfig: AxiosRequestConfig = {
             headers: this.headers,
             responseType: this.responseType,
+            maxRedirects: this.maxRedirects,
             timeout: this.timeout
         };
 
